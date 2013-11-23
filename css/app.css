@@ -1,0 +1,21 @@
+html, body, #background_map {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+div.plus-draggable {
+    margin-left: -10px;
+    margin-right: 15px;
+    zoom: 1;
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+}
+#background_map{
+    position: absolute;
+    top:0;
+    left: 0;
+    z-index: -10;
+}
+body {
+    background: url(../img/pattern.png) repeat center center;
+}

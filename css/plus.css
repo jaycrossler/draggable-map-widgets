@@ -2,14 +2,6 @@
 body{
   font-size: 12px; 
 }
-div.plus-draggable {
-    margin-left: -10px;
-    margin-right: 15px;
-}
-body {
-    background: url(../img/pattern.png) repeat center center;
-}
-
 
 .plus-menu .nav,
 .plus-menu .dropup,
