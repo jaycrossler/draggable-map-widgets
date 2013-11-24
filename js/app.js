@@ -37,7 +37,7 @@ app.addBackgroundMap=function(){
         ],
         controls: [
         ],
-        center: [-77.1930185,38.7523757],
+        center: [-77.042466107994,38.892564036371],
         zoom: 15
     });
 
@@ -126,7 +126,7 @@ app.buildMap=function(options,$content){
             new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Zoom()
         ],
-        center: [-77.1930185,38.7523757],
+        center: [-77.042466107994,38.892564036371],
         numZoomLevels: 20,
         zoom: 17
     });
