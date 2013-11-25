@@ -42,7 +42,7 @@ plusplus.lighthen=function(red, green, blue){
 
             var $targ = $(e.target);
             if ($targ.hasClass('plus-nodrag') ||
-                $targ.parent().hasClass('plus-nodrag')){ return;}
+                $targ.parents('.plus-nodrag').length){ return;}
 
             var $drag;
             if(opt.handle === "") {
@@ -55,6 +55,9 @@ plusplus.lighthen=function(red, green, blue){
                 drg_w = $drag.outerWidth(),
                 pos_y = $drag.offset().top + drg_h - e.pageY,
                 pos_x = $drag.offset().left + drg_w - e.pageX;
+            //TODO: Check the container bounds
+            //TODO: leave the zIndex the highest on page
+
             $drag.css('z-index', 1000).parents().on("mousemove", function(e) {
                 $('.draggable').offset({
                     top:e.pageY + pos_y - drg_h,
@@ -75,20 +78,22 @@ plusplus.lighthen=function(red, green, blue){
     };
 
     $.fn.boxCollapse = function(){
-            var th = $(this);
-            th.find('.icon_collapse').on('click', function(e){
-                e.preventDefault();
-                var parent = $(this).closest('.navbar').parent();
-                var content = parent.find('p');
-                content.slideToggle("slow", function(){
-                    var di = $(this).css("display");
-                    if(di == "none"){
-                        parent.find('.icon-chevron-up').removeClass('icon-chevron-up').addClass('icon-chevron-down plus-nodrag');
-                    }else{
-                        parent.find('.icon-chevron-down').removeClass('icon-chevron-down').addClass('icon-chevron-up plus-nodrag');
-                    }
-                });
+        var $icons = $(this).find('.icon_collapse');
+        $icons.off('click.collapse');
+
+        $icons.on('click.collapse', function(e){
+            e.preventDefault();
+            var parent = $(this).closest('.navbar').parent();
+            var content = parent.find('p');
+            content.slideToggle("slow", function(){
+                var di = $(this).css("display");
+                if(di == "none"){
+                    parent.find('.icon-chevron-up').removeClass('icon-chevron-up').addClass('icon-chevron-down plus-nodrag');
+                }else{
+                    parent.find('.icon-chevron-down').removeClass('icon-chevron-down').addClass('icon-chevron-up plus-nodrag');
+                }
             });
+        });
     };
 
     $.fn.verticalMenu = function(){

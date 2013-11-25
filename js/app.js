@@ -1,6 +1,6 @@
 var app=window.app || {};
 app.background_map=null;
-app.mapManager=[];
+app.activeWidgetManager=[];
 app.saveConfig=true;
 app.settings={
     buffer:20,
@@ -17,9 +17,7 @@ app.init=function(){
     $(window).bind('beforeunload',app.setCookie);
     setInterval(app.setCookie,10000); //Auto-save config every 10 seconds
 
-    //TODO: Have a function that auto-builds menubars
     //TODO: Add function for adding map widgets and other type of widgets
-    //TODO: Add UI ability to change opacity of widgets
     //TODO: Handle multiple layers per map widget
     //TODO: Build into a Django app
     //TODO: Make menu titlebars smaller
@@ -60,15 +58,16 @@ app.lookupWidgetInfo=function(options){
         return options;
     }
 
+    var newOptions;
     $.each(app.widget_store,function(i,widget_data){
         if (widget_data.widget_id == options.widget_id){
-            options = $.extend(true,{},widget_data,options);
-            if (options.content_function) options.content = app[options.content_function];
+            newOptions = $.extend(true,{},widget_data,options);
             return false;
         }
     });
+    if (newOptions && newOptions.content_function) newOptions.content = app[newOptions.content_function];
 
-    return options;
+    return newOptions || options;
 };
 
 app.addWidgets=function(widget_list){
@@ -88,8 +87,8 @@ app.isWidgetAlreadyDrawn=function(options){
     var $w = $('#'+id);
     return $w && $w.length;
 };
-app.updateWidget=function(options){
-    var widget = app.getWidget(options.name);
+app.updateWidget=function(options,widget){
+    widget = widget || app.getWidget(options.name);
     if (widget) {
         widget.widget.$content.css({width:options.width,height:options.height});
         if (options.minimized && options.minimized=="none"){
@@ -122,7 +121,10 @@ app.addWidget=function(options,$holder){
 
     var $widget_wrapper = $('<div class="span6 plus-collapsible plus-draggable">')
         .appendTo($holder);
-    var $titlebar = $('<div class="navbar">').appendTo($widget_wrapper);
+    var $titlebar = $('<div class="navbar">')
+        .appendTo($widget_wrapper);
+    $titlebar.drags();
+
     var $titlebar_in = $('<div class="navbar-inner">').appendTo($titlebar);
     $('<a class="brand" href="#">')
         .text(options.name||"Widget")
@@ -131,10 +133,34 @@ app.addWidget=function(options,$holder){
     if (!options.preventCollapse) {
         $('<a class="btn pull-right icon_collapse plus-nodrag" href="#"><i class="icon-chevron-up"></i></a>')
             .appendTo($titlebar_in);
+        $widget_wrapper.boxCollapse()
     }
     if (!options.preventMove) {
         $('<a class="btn pull-right icon_drag" href="#"><i class="icon-fullscreen"></i></a>')
             .appendTo($titlebar_in);
+    }
+    if (!options.preventMenu) {
+
+        var menuOptions = [
+            {icon:'share',title:'Duplicate Widget',onClick:function(){
+                var newOptions = $.extend({},options,{name:options.name+' copy'});
+                app.addWidgets([newOptions]);
+            }},
+            {icon:'plus-sign',title:'100% Solid',onClick:function(){
+                $widget_wrapper.fadeTo(100,1);
+            }},
+            {icon:'minus-sign',title:'80% Transparent',onClick:function(){
+                $widget_wrapper.fadeTo(100,.8);
+            }},
+            {icon:'minus-sign',title:'60% Transparent',onClick:function(){
+                $widget_wrapper.fadeTo(100,.6);
+            }},
+            {icon:'fire',addClass:'btn-warning',title:'Remove Widget',onClick:function(){
+                app.removeWidget(options);
+            }}
+
+        ];
+        app.buildHoverMenu("Options",menuOptions).appendTo($titlebar_in);
     }
 
     var $content = $('<p class="well">').appendTo($widget_wrapper);
@@ -172,10 +198,12 @@ app.addWidget=function(options,$holder){
     options.$titlebar = $titlebar;
     options.$holder = $widget_wrapper;
 
-    var mapInfo= $.extend({widget:options, id:id},additional_config);
-    app.mapManager.push(mapInfo);
+    var widgetInfo= $.extend({widget:options, id:id},additional_config);
+    app.activeWidgetManager.push(widgetInfo);
 
-    return mapInfo;
+    app.updateWidget(options,widgetInfo);
+
+    return widgetInfo;
 
 };
 app.buildMap=function(options,$content){
@@ -208,11 +236,11 @@ app.buildCalendar=function(options,$content){
 
 };
 app.getWidget=function(name){
-    if (typeof name=="number" && app.mapManager.length>name){
-        return app.mapManager[name];
+    if (typeof name=="number" && app.activeWidgetManager.length>name){
+        return app.activeWidgetManager[name];
     }  else {
-        for (var i=0;i<app.mapManager.length;i++){
-            var widget =app.mapManager[i];
+        for (var i=0;i<app.activeWidgetManager.length;i++){
+            var widget =app.activeWidgetManager[i];
             if (widget.id==name || widget.div==name || widget.widget.name.toLowerCase()==name.toLowerCase()){
                 return widget;
             }
@@ -220,9 +248,33 @@ app.getWidget=function(name){
     }
     return false;
 };
+app.isWidgetThisWidget=function(widget,name){
+    if (widget.id==name || widget.div==name) return true;
+    return ( widget && widget.widget && widget.widget.name && widget.widget.name.length
+        && name.length && widget.widget.name.toLowerCase()==name.toLowerCase());
+};
+app.removeWidget=function(options){
+    var name=options.name;
+
+    for (var i=0;i<app.activeWidgetManager.length;i++){
+        var widget =app.activeWidgetManager[i];
+        if (widget.id==name || widget.div==name ||
+            (widget && widget.widget && widget.widget.name && widget.widget.name.length
+            && name.length && widget.widget.name.toLowerCase()==name.toLowerCase())){
+            app.activeWidgetManager[i]={};
+        }
+    }
+    options.$holder.empty();
+    delete options;
+};
 app.getConfig=function(notAsJSON){
     var config={widgets:[]};
-    $(app.mapManager).each(function(i,widget_holder){
+    $(app.activeWidgetManager).each(function(i,widget_holder){
+        if (!widget_holder.widget || !widget_holder.widget.$content) {
+            //Likely a deleted widget, skip it
+            return;
+        }
+
         var data = widget_holder.widget;
         var $content = data.$content;
 
@@ -294,4 +346,24 @@ app.getOpacity=function(elem) {
         }
     }
     return ori;
+};
+app.buildHoverMenu=function(menuTitle,menuOptions){
+
+    var $navC = $('<div class="nav-collapse plus-nodrag pull-right">');
+    var $navUl = $('<ul class="nav">')
+        .appendTo($navC);
+    var $navLi = $('<li class="dropdown">')
+        .appendTo($navUl);
+    var $navLink = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown">'+menuTitle+'<b class="caret"></b></a>')
+        .appendTo($navLi);
+    var $navLiHolder = $('<ul class="dropdown-menu plus-mega plus-hover"><li><div class="plus-mega-content"><ul class="span2">')
+        .appendTo($navLink);
+    $(menuOptions).each(function(i,option){
+        var $item = $('<li><a href="#"><i class="icon-'+option.icon+'"></i>'+option.title+'</a></li>')
+            .on('click',option.onClick||function(){})
+            .appendTo($navLiHolder);
+        if (option.addClass) $item.addClass(option.addClass);
+    });
+    if (!menuOptions.length) $navC.hide();
+    return $navC;
 };
