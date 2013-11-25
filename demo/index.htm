@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Draggable Map Widgets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link rel="stylesheet" type="text/css" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.blue.css">
+    <link rel="stylesheet" type="text/css" href="css/plus.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.css">
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+    <![endif]-->
+
+  <body data-twttr-rendered="true" data-spy="scroll" data-target=".bs-docs-sidebar">
+
+    <div id="background_map"></div>
+
+    <!-- Navbar
+    ================================================== -->
+    <div class="navbar plus-menu">
+        <div class="navbar-inner">
+            <div class="container" style="width: auto;">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand" href="#"></a>
+                <div class="nav-collapse">
+                    <ul class="nav">
+
+
+
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Mega Menu On Hover <b class="caret"></b></a>
+                            <ul class="dropdown-menu plus-mega plus-hover">
+                                <li>
+                                    <div class="plus-mega-content">
+                                        <ul class="span2">
+                                            <li><a href="#"><i class="icon-search"></i>Find People</a></li>
+                                            <li><a href="#"><i class="icon-plus-sign"></i>Add People</a></li>
+                                            <li><a href="#"><i class="icon-edit"></i>Edit Entries</a></li>
+                                            <li><a href="#"><i class="icon-envelope"></i>Messages</a></li>
+                                            <li><a href="#"><i class="icon-comment"></i>Comments</a></li>
+                                        </ul>
+
+                                        <ul class="span2">
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#"><i class="icon-thumbs-up"></i>Likes</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">Lorem Ipsum</a></li>
+                                        </ul>
+
+                                        <ul class="span2">
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#"><i class="icon-info-sign"></i>Logs</a></li>
+                                            <li><a href="#">XYZZZZZZ</a></li>
+                                        </ul>
+
+                                        <ul class="span2">
+                                            <li><a href="#"><i class="icon-star"></i>Ratings</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">XYZZZZZZ</a></li>
+                                        </ul>
+
+
+                                        <ul class="span2">
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#"><i class="icon-ban-circle"></i>Warnings</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">XYZZZZZZ</a></li>
+                                        </ul>
+
+
+                                    </div>
+
+
+
+                                </li>
+
+                            </ul>
+                        </li>
+                    </ul>
+
+
+                    <ul class="nav pull-right">
+
+                        <li class="divider-vertical"></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Mega On Click <b class="caret"></b></a>
+                            <ul class="dropdown-menu plus-mega">
+
+                                <li>
+                                    <div class="plus-mega-content">
+                                        <ul class="span2">
+                                            <li><a href="#"><i class="icon-search"></i>Find People</a></li>
+                                            <li><a href="#"><i class="icon-plus-sign"></i>Add People</a></li>
+                                            <li><a href="#"><i class="icon-edit"></i>Edit Entries</a></li>
+                                            <li><a href="#"><i class="icon-envelope"></i>Messages</a></li>
+                                            <li><a href="#"><i class="icon-comment"></i>Comments</a></li>
+                                        </ul>
+
+                                        <ul class="span2">
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#"><i class="icon-thumbs-up"></i>Likes</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">Lorem Ipsum</a></li>
+                                        </ul>
+
+                                        <ul class="span2">
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#"><i class="icon-info-sign"></i>Logs</a></li>
+                                            <li><a href="#">XYZZZZZZ</a></li>
+                                        </ul>
+
+                                        <ul class="span2">
+                                            <li><a href="#"><i class="icon-star"></i>Ratings</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">XYZZZZZZ</a></li>
+                                        </ul>
+
+
+                                        <ul class="span2">
+                                            <li><a href="#">Separated link</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#"><i class="icon-ban-circle"></i>Warnings</a></li>
+                                            <li><a href="#">One More</a></li>
+                                            <li><a href="#">XYZZZZZZ</a></li>
+                                        </ul>
+
+
+                                    </div>
+
+
+
+                                </li>
+
+
+                            </ul>
+                        </li>
+                    </ul>
+
+                </div><!-- /.nav-collapse -->
+            </div>
+        </div><!-- /navbar-inner -->
+    </div>
+
+
+
+    <div>
+        <div id="widget_holder">
+
+        </div>
+    </div>
+
+
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/plus.plus.js"></script>
+    <script type="text/javascript" src="js/OpenLayers/OpenLayers.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="service/stub_widgets.1.js"></script>
+    <script type="text/javascript" src="service/stub_widget_list.js"></script>
+    <script language="JavaScript">
+        $().ready(function(){
+            app.init();
+        });
+    </script>
+
+
+</body></html>
