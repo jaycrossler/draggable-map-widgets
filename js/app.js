@@ -106,6 +106,9 @@ app.addWidget=function(options,$holder){
         .resizable({
             resize: function( event, ui ) {
                 $titlebar.css({width:ui.size.width+20});
+
+                var widget = app.getWidget(id);
+                if (widget.map) widget.map.updateSize();
             }
         });
     //TODO: On drag, make z-index the highest
@@ -128,7 +131,7 @@ app.addWidget=function(options,$holder){
     options.$titlebar = $titlebar;
     options.$holder = $widget_wrapper;
 
-    var mapInfo= $.extend({widget:options, div_id:id},additional_config);
+    var mapInfo= $.extend({widget:options, id:id},additional_config);
     app.mapManager.push(mapInfo);
 
     return mapInfo;
@@ -168,9 +171,9 @@ app.getWidget=function(name){
         return app.mapManager[name];
     }  else {
         for (var i=0;i<app.mapManager.length;i++){
-            var map =app.mapManager[i];
-            if (map.id==name || map.div==name || map.widget.name.toLowerCase()==name.toLowerCase()){
-                return map;
+            var widget =app.mapManager[i];
+            if (widget.id==name || widget.div==name || widget.widget.name.toLowerCase()==name.toLowerCase()){
+                return widget;
             }
         }
     }
@@ -220,6 +223,10 @@ app.restoreConfigFromCookie=function(){
                 }
                 widget.widget.$holder.offset({top:widget_info.top,left:widget_info.left});
                 widget.widget.$titlebar.css({width:widget_info.width+20});
+
+                if (widget.map){
+                    widget.map.updateSize();
+                }
 
                 if (widget.map && widget_info.extents) {
                     var e = widget_info.extents;
