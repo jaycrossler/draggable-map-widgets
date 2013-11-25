@@ -4,7 +4,7 @@ html, body, #background_map {
     height: 100%;
 }
 div.plus-draggable {
-    margin-left: -10px;
+    margin-left: 10px;
     margin-right: 15px;
     zoom: 1;
     filter: alpha(opacity=80);
