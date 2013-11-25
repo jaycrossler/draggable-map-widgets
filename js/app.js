@@ -1,10 +1,11 @@
-var app={};
+var app=window.app || {};
 app.background_map=null;
 app.mapManager=[];
 
 app.init=function(){
     app.addBackgroundMap();
-    app.addWidgets();
+
+    app.addWidgets(app.default_widget_list);
     plusplus.init();
     app.restoreConfigFromCookie();
 
@@ -43,21 +44,40 @@ app.addBackgroundMap=function(){
 
     background_map.addControl(new OpenLayers.Control.LayerSwitcher());
 };
-app.addWidgets=function(){
-    var $holder = $("#widget_holder");
+app.lookupWidgetInfo=function(options){
+    //Extends a widget config with all widget info
+    if (!options || !options.widget_id){
+        console.log("ERROR = app.lookupWidgetInfo received a request for a widget, and no widget_id was passed in.");
+        return options;
+    }
+    if (!app.widget_store || !app.widget_store.length){
+        console.log("ERROR = app.widget_store is not defined or doesn't have widgets within it.");
+        return options;
+    }
 
-    var widget_list = [
-        {name:"First Floor",content:app.buildMap, parameters:{map_num:1}}, //TODO: Pull from DB and extend with more settings
-        {name:"Second Floor",content:app.buildMap, parameters:{map_num:2}},
-        {name:"Third Floor",content:app.buildMap, parameters:{map_num:3}},
-        {name:"Upcoming Events",content:app.buildCalendar}
-    ];
+    $.each(app.widget_store,function(i,widget_data){
+        if (widget_data.widget_id == options.widget_id){
+            options = $.extend(true,{},widget_data,options);
+            if (options.content_function) options.content = app[options.content_function];
+            return false;
+        }
+    });
+
+    return options;
+};
+
+app.addWidgets=function(widget_list){
+    widget_list = widget_list || [];
+
+    var $holder = $("#widget_holder");
     $.each(widget_list,function(i,widget){
+        //TODO: if widget is already drawn, just modify position, not re-add
         app.addWidget(widget,$holder);
     });
 
 };
 app.addWidget=function(options,$holder){
+    options = app.lookupWidgetInfo(options);
 
     var $widget_wrapper = $('<div class="span6 plus-collapsible plus-draggable">')
         .appendTo($holder);
@@ -77,7 +97,7 @@ app.addWidget=function(options,$holder){
     }
 
     var $content = $('<p class="well">').appendTo($widget_wrapper);
-    var id = options.id || options.name.replace(/[ -0-9]/g,"");
+    var id = options.divid || options.name.replace(/[ -0-9]/g,"");
     var height = options.height || 200;
     var width = $content.parent().css('width')-20;
     $content
@@ -92,9 +112,10 @@ app.addWidget=function(options,$holder){
 
     options.id = id;
     var content_type = typeof options.content;
+    var additional_config = {};
 
     if (content_type=="function"){
-        options.content(options,$content);
+        additional_config = options.content(options,$content) || {};
     } else if (content_type=="object" && options.content.appendTo){
         options.content.appendTo($content);
     } else if (content_type=="string"){
@@ -106,14 +127,19 @@ app.addWidget=function(options,$holder){
     options.$content = $content;
     options.$titlebar = $titlebar;
     options.$holder = $widget_wrapper;
-    $widget_wrapper.data('widget',options);
 
-    return $widget_wrapper;
+    var mapInfo= $.extend({widget:options, div_id:id},additional_config);
+    app.mapManager.push(mapInfo);
+
+    return mapInfo;
 
 };
 app.buildMap=function(options,$content){
-//    var parameters = options.parameters || {};
     var id = $content.attr('id');
+
+    var controls = [];
+    if (options.parameters.panning) controls.push(new OpenLayers.Control.Navigation());
+    if (options.parameters.zoom_buttons) controls.push(new OpenLayers.Control.Zoom());
 
     var newmap = new OpenLayers.Map({
         div: id,
@@ -122,26 +148,20 @@ app.buildMap=function(options,$content){
                 "http://geoint.nrlssc.navy.mil/nrltileserver/wms",
                 {layers: "NAIP"})
         ],
-        controls: [
-            new OpenLayers.Control.Navigation(),
-            new OpenLayers.Control.Zoom()
-        ],
-        center: [-77.042466107994,38.892564036371],
-        numZoomLevels: 20,
-        zoom: 17
+        controls: controls,
+        center: options.parameters.center,
+        numZoomLevels: options.parameters.numZoomLevels,
+        zoom: options.parameters.zoom
     });
 
-    var mapInfo={widget:options, div_id:id, map:newmap};
-    app.mapManager.push(mapInfo);
+    return {map:newmap};
 
 };
 app.buildCalendar=function(options,$content){
     var id = $content.attr('id');
 
-    var mapInfo={widget:options, div_id:id};
-    app.mapManager.push(mapInfo);
+    $('<div>').html("<h1>Calendar</h1>").appendTo($content);
 
-    return $('<div>').html("<h1>Calendar</h1>");
 };
 app.getWidget=function(name){
     if (typeof name=="number" && app.mapManager.length>name){
@@ -149,7 +169,7 @@ app.getWidget=function(name){
     }  else {
         for (var i=0;i<app.mapManager.length;i++){
             var map =app.mapManager[i];
-            if (map.div_id==name || map.div==name || map.widget.name.toLowerCase()==name.toLowerCase()){
+            if (map.id==name || map.div==name || map.widget.name.toLowerCase()==name.toLowerCase()){
                 return map;
             }
         }
@@ -158,22 +178,21 @@ app.getWidget=function(name){
 };
 app.getConfig=function(notAsJSON){
     var config={widgets:[]};
-    $('.plus-draggable').each(function(i,widget_holder){
-        var data = $(widget_holder).data('widget');
+    $(app.mapManager).each(function(i,widget_holder){
+        var data = widget_holder.widget;
         var $content = data.$content;
 
         var name = data.name;
         var width = parseInt($content.css('width'));
         var height = parseInt($content.css('height'));
-        var top = parseInt($(widget_holder).position().top);
-        var left = parseInt($(widget_holder).position().left);
+        var top = parseInt(data.$holder.position().top);
+        var left = parseInt(data.$holder.position().left)-10;
         var minimized = $content.css('display');
-        var widget_info = {name:name, width:width, height:height, top:top, left:left, minimized:minimized};
+        var widget_info = {widget_id:data.widget_id, name:name, width:width, height:height, top:top, left:left, minimized:minimized};
 
-        var widget = app.getWidget(name);
-        if (widget && widget.map && widget.map.getExtent) {
-            widget_info.extents = widget.map.getExtent();
-            widget_info.zoom = widget.map.getZoom();
+        if (widget_holder.map && widget_holder.map.getExtent) {
+            widget_info.extents = widget_holder.map.getExtent();
+            widget_info.zoom = widget_holder.map.getZoom();
         }
 
         config.widgets.push(widget_info);
