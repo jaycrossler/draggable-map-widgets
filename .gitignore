@@ -4,5 +4,5 @@ CACHE/*
 *.log
 *.pot
 *.pyc
-procyon/local_settings.py
+local_settings.py
 
