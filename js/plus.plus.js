@@ -40,6 +40,10 @@ plusplus.lighthen=function(red, green, blue){
 
         return $el.css('cursor', opt.cursor).on("mousedown", function(e) {
 
+            var $targ = $(e.target);
+            if ($targ.hasClass('plus-nodrag') ||
+                $targ.parent().hasClass('plus-nodrag')){ return;}
+
             var $drag;
             if(opt.handle === "") {
                 $drag = $(this).closest('.plus-draggable').addClass('draggable');
@@ -74,13 +78,14 @@ plusplus.lighthen=function(red, green, blue){
             var th = $(this);
             th.find('.icon_collapse').on('click', function(e){
                 e.preventDefault();
-                var content = $(this).closest('.navbar').parent().find('p');
+                var parent = $(this).closest('.navbar').parent();
+                var content = parent.find('p');
                 content.slideToggle("slow", function(){
                     var di = $(this).css("display");
                     if(di == "none"){
-                        $('.icon-chevron-up').removeClass('icon-chevron-up').addClass('icon-chevron-down');
+                        parent.find('.icon-chevron-up').removeClass('icon-chevron-up').addClass('icon-chevron-down plus-nodrag');
                     }else{
-                        $('.icon-chevron-down').removeClass('icon-chevron-down').addClass('icon-chevron-up');
+                        parent.find('.icon-chevron-down').removeClass('icon-chevron-down').addClass('icon-chevron-up plus-nodrag');
                     }
                 });
             });
@@ -149,7 +154,7 @@ plusplus.init=function(){
     $('.plus-verticalMenu').verticalMenu();
     $('.plus-collapsible').boxCollapse();
 
-    $('.icon_drag').drags();
+    $('.plus-collapsible .navbar').drags();
 
     $('.plus-verticalMenu > ul > .active').css('background-color', $('.nav-list > .active > a' ).css('background-color')).css('color', $('.nav-list > .active > a' ).css('color') );
 

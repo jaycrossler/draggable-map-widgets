@@ -2,6 +2,10 @@ var app=window.app || {};
 app.background_map=null;
 app.mapManager=[];
 app.saveConfig=true;
+app.settings={
+    buffer:20,
+    default_height:200
+};
 
 app.init=function(){
     app.addBackgroundMap();
@@ -94,7 +98,7 @@ app.updateWidget=function(options){
             widget.widget.$content.css('display','block');
         }
         widget.widget.$holder.offset({top:options.top,left:options.left});
-        widget.widget.$titlebar.css({width:options.width+20});
+        widget.widget.$titlebar.css({width:options.width+app.settings.buffer});
         if (options.opacity) {
             widget.widget.$holder.fadeTo(100,options.opacity);
         }
@@ -125,7 +129,7 @@ app.addWidget=function(options,$holder){
         .on('click',options.nameClickFunction||function(){})
         .appendTo($titlebar_in);
     if (!options.preventCollapse) {
-        $('<a class="btn pull-right icon_collapse" href="#"><i class="icon-chevron-up"></i></a>')
+        $('<a class="btn pull-right icon_collapse plus-nodrag" href="#"><i class="icon-chevron-up"></i></a>')
             .appendTo($titlebar_in);
     }
     if (!options.preventMove) {
@@ -135,14 +139,14 @@ app.addWidget=function(options,$holder){
 
     var $content = $('<p class="well">').appendTo($widget_wrapper);
     var id = options.divid || app.titleize(options.name);
-    var height = options.height || 200;
-    var width = $content.parent().css('width')-20;
+    var height = options.height || app.settings.default_height || 200;
+    var width = $content.parent().css('width')-app.settings.buffer;
     $content
         .attr('id',id)
         .css({height:height, width:width})
         .resizable({
             resize: function( event, ui ) {
-                $titlebar.css({width:ui.size.width+20});
+                $titlebar.css({width:ui.size.width+app.settings.buffer});
 
                 var widget = app.getWidget(id);
                 if (widget.map) widget.map.updateSize();
@@ -226,7 +230,7 @@ app.getConfig=function(notAsJSON){
         var width = parseInt($content.css('width'));
         var height = parseInt($content.css('height'));
         var top = parseInt(data.$holder.position().top);
-        var left = parseInt(data.$holder.position().left)+10;
+        var left = parseInt(data.$holder.position().left)+parseInt(app.settings.buffer/2);
         var minimized = $content.css('display');
         var opacity = app.getOpacity(data.$holder);
         var widget_info = {widget_id:data.widget_id, name:name, width:width, height:height, top:top, left:left, minimized:minimized, opacity:opacity};
