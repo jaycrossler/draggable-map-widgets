@@ -11,7 +11,7 @@ app.init=function(){
     app.addBackgroundMap();
 
     app.addWidgets(app.default_widget_list);
-    plusplus.init();
+//    plusplus.init();
     app.restoreConfigFromCookie();
 
     $(window).bind('beforeunload',app.setCookie);
@@ -119,11 +119,12 @@ app.updateWidget=function(options,widget){
 app.addWidget=function(options,$holder){
     options = app.lookupWidgetInfo(options);
 
-    var $widget_wrapper = $('<div class="span6 plus-collapsible plus-draggable">')
+    var $widget_wrapper = $('<div class="span6 plus-collapsible">')
         .appendTo($holder);
     var $titlebar = $('<div class="navbar">')
         .appendTo($widget_wrapper);
-    $titlebar.drags();
+
+//    $titlebar.drags();
 
     var $titlebar_in = $('<div class="navbar-inner">').appendTo($titlebar);
     $('<a class="brand" href="#">')
@@ -193,6 +194,8 @@ app.addWidget=function(options,$holder){
     } else {
         $content.html("Unrecognized content");
     }
+
+    $widget_wrapper.draggable({handle:".navbar",containment:"body", stack:".plus-collapsible"});
 
     options.$content = $content;
     options.$titlebar = $titlebar;
