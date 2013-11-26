@@ -55,8 +55,6 @@ plusplus.lighthen=function(red, green, blue){
                 drg_w = $drag.outerWidth(),
                 pos_y = $drag.offset().top + drg_h - e.pageY,
                 pos_x = $drag.offset().left + drg_w - e.pageX;
-            //TODO: Check the container bounds
-            //TODO: leave the zIndex the highest on page
 
             $drag.css('z-index', 1000).parents().on("mousemove", function(e) {
                 $('.draggable').offset({

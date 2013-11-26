@@ -6,20 +6,21 @@ app.activeWidgetManager=[];
 app.saveConfig=true;
 app.settings={
     buffer:20,
-    default_height:200
+    default_height:200,
+    num_links_in_menubuilder_column:5
 };
 
 app.init=function(){
     app.addBackgroundMap();
 
     app.addWidgets(app.default_widget_list);
-//    plusplus.init();
     app.restoreConfigFromCookie();
 
     $(window).bind('beforeunload',app.setCookie);
     setInterval(app.setCookie,10000); //Auto-save config every 10 seconds
 
-    //TODO: Add function for adding map widgets and other type of widgets
+    app.addMainMenu();
+
     //TODO: Handle multiple layers per map widget
     //TODO: Build into a Django app
     //TODO: Make menu titlebars smaller
@@ -39,7 +40,6 @@ app.addBackgroundMap=function(){
             new OpenLayers.Layer.WMS("Landsat7",
                 "http://geoint.nrlssc.navy.mil/nrltileserver/wms",
                 {layers: "NAIP,OSM_BASEMAP_OVERLAY"})
-
         ],
         center: [-77.042466107994,38.892564036371],
         zoom: 15
@@ -117,14 +117,13 @@ app.updateWidget=function(options,widget){
     }
 };
 app.addWidget=function(options,$holder){
+    options = $.extend({},options);
     options = app.lookupWidgetInfo(options);
 
     var $widget_wrapper = $('<div class="span6 plus-collapsible">')
         .appendTo($holder);
     var $titlebar = $('<div class="navbar">')
         .appendTo($widget_wrapper);
-
-//    $titlebar.drags();
 
     var $titlebar_in = $('<div class="navbar-inner">').appendTo($titlebar);
     $('<a class="brand" href="#">')
@@ -161,7 +160,7 @@ app.addWidget=function(options,$holder){
             }}
 
         ];
-        app.buildHoverMenu("Options",menuOptions).appendTo($titlebar_in);
+        app.buildHoverMenu({menuTitle:"Options",clickInsteadOfHover:false,right:true,menuOptions:menuOptions}).appendTo($titlebar_in);
     }
 
     var $content = $('<p class="well">').appendTo($widget_wrapper);
@@ -284,8 +283,14 @@ app.getConfig=function(notAsJSON){
         var name = data.name;
         var width = parseInt($content.css('width'));
         var height = parseInt($content.css('height'));
-        var top = parseInt(data.$holder.position().top);
-        var left = parseInt(data.$holder.position().left)+parseInt(app.settings.buffer/2);
+        var $holder = data.$holder;
+        var top,left;
+        if ($holder && $holder.position && $holder.position()){
+            top = parseInt($holder.position().top);
+            left = parseInt($holder.position().left)+app.settings.buffer;
+        }
+        //TODO: Check that buffer is standard in every browser
+
         var minimized = $content.css('display');
         var opacity = app.getOpacity(data.$holder);
         var widget_info = {widget_id:data.widget_id, name:name, width:width, height:height, top:top, left:left, minimized:minimized, opacity:opacity};
@@ -316,7 +321,7 @@ app.restoreConfigFromCookie=function(){
     }
 };
 app.restoreConfigFromString=function(configString){
-    configString = '{"widgets":[{"widget_id":"mini_map","name":"First Floor","opacity":1,"width":330,"height":200,"top":72,"left":40,"minimized":"block","extents":{"left":-77.044540606474,"bottom":38.893079020501,"right":-77.040785513854,"top":38.895439364435},"zoom":17},{"widget_id":"mini_map","name":"Second Floor","width":483,"height":283,"top":80,"left":425,"minimized":"block","extents":{"left":-77.045628432422,"bottom":38.89201954794,"right":-77.042930130154,"top":38.893644966604},"zoom":18},{"widget_id":"mini_map","name":"Third Floor","width":749,"height":270,"top":290,"left":119,"minimized":"block","extents":{"left":-77.056654993683,"bottom":38.891351677896,"right":-77.040154043823,"top":38.89757440281},"zoom":16},{"widget_id":"mini_calendar","name":"Upcoming Events","width":689,"height":200,"top":649,"left":224,"minimized":"none"}]}';
+    configString = configString ||'{"widgets":[{"widget_id":"mini_map","name":"First Floor","opacity":1,"width":330,"height":200,"top":72,"left":40,"minimized":"block","extents":{"left":-77.044540606474,"bottom":38.893079020501,"right":-77.040785513854,"top":38.895439364435},"zoom":17},{"widget_id":"mini_map","name":"Second Floor","width":483,"height":283,"top":80,"left":425,"minimized":"block","extents":{"left":-77.045628432422,"bottom":38.89201954794,"right":-77.042930130154,"top":38.893644966604},"zoom":18},{"widget_id":"mini_map","name":"Third Floor","width":749,"height":270,"top":290,"left":119,"minimized":"block","extents":{"left":-77.056654993683,"bottom":38.891351677896,"right":-77.040154043823,"top":38.89757440281},"zoom":16},{"widget_id":"mini_calendar","name":"Upcoming Events","width":689,"height":200,"top":649,"left":224,"minimized":"none"}]}';
     var config;
     try {
         config = JSON.parse(configString);
@@ -350,23 +355,81 @@ app.getOpacity=function(elem) {
     }
     return ori;
 };
-app.buildHoverMenu=function(menuTitle,menuOptions){
+app.buildHoverMenu=function(options){
+    //TODO: options.clickInsteadOfHover isn't working
 
-    var $navC = $('<div class="nav-collapse plus-nodrag pull-right">');
+    var num_rows = options.colSize || app.settings.num_links_in_menubuilder_column || 5;
+
+    var $navC = $('<div class="nav-collapse plus-nodrag">');
     var $navUl = $('<ul class="nav">')
         .appendTo($navC);
+    if (options.right) {$navUl.addClass('pull-right');}
     var $navLi = $('<li class="dropdown">')
         .appendTo($navUl);
-    var $navLink = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown">'+menuTitle+'<b class="caret"></b></a>')
+    var $navLink = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown">')
+        .text(options.menuTitle)
         .appendTo($navLi);
-    var $navLiHolder = $('<ul class="dropdown-menu plus-mega plus-hover"><li><div class="plus-mega-content"><ul class="span2">')
+    $('<b class="caret">').appendTo($navLink);
+    var $navUlHolder = $('<ul class="dropdown-menu plus-mega">')
         .appendTo($navLink);
-    $(menuOptions).each(function(i,option){
+    if (!options.clickInsteadOfHover) {$navUlHolder.addClass('plus-hover');}
+
+    var $navUlLi = $('<li>')
+        .appendTo($navUlHolder);
+    var $navUlDiv = $('<div class="plus-mega-content">')
+        .appendTo($navUlLi);
+
+    var row_height = 0;
+    var $navLiHolder;
+    $(options.menuOptions||[]).each(function(i,option){
+        if (row_height%num_rows==0){
+            $navLiHolder = $('<ul class="span2">')
+                .appendTo($navUlDiv);
+        }
         var $item = $('<li><a href="#"><i class="icon-'+option.icon+'"></i>'+option.title+'</a></li>')
             .on('click',option.onClick||function(){})
             .appendTo($navLiHolder);
         if (option.addClass) $item.addClass(option.addClass);
+        row_height++;
     });
-    if (!menuOptions.length) $navC.hide();
+    if (!options.menuOptions || !options.menuOptions.length) $navC.hide();
+
+    if ($navLink.dropdown) $navLink.dropdown();
+
     return $navC;
+};
+app.addMainMenu=function(){
+    var menuOptions = [
+        {icon:'share',title:'Add Map Widget',onClick:function(){
+            var options ={name:"Map",widget_id:"mini_map",parameters:{map_num:3}};
+            app.addWidget(options);
+        }},
+        {icon:'share',title:'Add Other Widget',onClick:function(){
+            var options ={name:"Calendar",widget_id:"mini_calendar"};
+            app.addWidget(options);
+        }},
+        {icon:'share',title:'Add Table Widget',onClick:function(){
+            var options ={name:"Table",widget_id:"mini_calendar"};
+            app.addWidget(options);
+        }}
+    ];
+    app.buildHoverMenu({menuTitle:"Add Widgets",clickInsteadOfHover:false,right:false,menuOptions:menuOptions}).appendTo('#main_menu');
+    //TODO: This adding of widgets is adding them at a weird size
+    //TODO: Make sure all imported widgets are brought on screen, and are of sufficient size
+    //TODO: Bring widgets in at proper z-index
+
+    menuOptions = [
+        {icon:'share',title:'Remove Cookies',onClick:function(){
+            app.clearCookiesAndReload();
+        }},
+        {icon:'share',title:'Load settings 1',onClick:function(){
+            app.restoreConfigFromString()
+        }},
+        {icon:'share',title:'Print Settings to Console',onClick:function(){
+            console.log(app.getConfig());
+        }}
+
+    ];
+    app.buildHoverMenu({menuTitle:"Widget Functions",clickInsteadOfHover:false,right:true,menuOptions:menuOptions}).appendTo('#main_menu');
+
 };
