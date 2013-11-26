@@ -19,3 +19,6 @@ div.plus-draggable {
 body {
     background: url(../img/pattern.png) repeat center center;
 }
+.dropdown-menu ul li a {
+    color:black;
+}
