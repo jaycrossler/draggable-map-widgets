@@ -398,7 +398,6 @@ app.buildHoverMenu=function(options){
 
     return $navC;
 };
-<<<<<<< HEAD
 app.addMainMenu=function(){
     var menuOptions = [
         {icon:'share',title:'Add Map Widget',onClick:function(){
@@ -434,5 +433,3 @@ app.addMainMenu=function(){
     app.buildHoverMenu({menuTitle:"Widget Functions",clickInsteadOfHover:false,right:true,menuOptions:menuOptions}).appendTo('#main_menu');
 
 };
-=======
->>>>>>> 08d56689d315733edf6316c39622a7add464fe8a
