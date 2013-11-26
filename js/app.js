@@ -1,3 +1,5 @@
+window.log=function(){log.history=log.history||[];log.history.push(arguments);if(this.console){console.log(Array.prototype.slice.call(arguments))}};window.console=window.console||{log:log,warn:log,error:log,assert:log};
+
 var app=window.app || {};
 app.background_map=null;
 app.activeWidgetManager=[];
@@ -32,21 +34,18 @@ app.init=function(){
 
 app.addBackgroundMap=function(){
     OpenLayers.ImgPath = "js/OpenLayers/img/";
-    background_map = new OpenLayers.Map({
+    app.background_map = new OpenLayers.Map({
         div: "background_map",
         layers: [
             new OpenLayers.Layer.WMS("Landsat7",
                 "http://geoint.nrlssc.navy.mil/nrltileserver/wms",
                 {layers: "NAIP,OSM_BASEMAP_OVERLAY"})
-
-        ],
-        controls: [
         ],
         center: [-77.042466107994,38.892564036371],
         zoom: 15
     });
 
-    background_map.addControl(new OpenLayers.Control.LayerSwitcher());
+    app.background_map.addControl(new OpenLayers.Control.LayerSwitcher());
 };
 app.lookupWidgetInfo=function(options){
     //Extends a widget config with all widget info
@@ -399,6 +398,7 @@ app.buildHoverMenu=function(options){
 
     return $navC;
 };
+<<<<<<< HEAD
 app.addMainMenu=function(){
     var menuOptions = [
         {icon:'share',title:'Add Map Widget',onClick:function(){
@@ -434,3 +434,5 @@ app.addMainMenu=function(){
     app.buildHoverMenu({menuTitle:"Widget Functions",clickInsteadOfHover:false,right:true,menuOptions:menuOptions}).appendTo('#main_menu');
 
 };
+=======
+>>>>>>> 08d56689d315733edf6316c39622a7add464fe8a
