@@ -1,3 +1,5 @@
+window.log=function(){log.history=log.history||[];log.history.push(arguments);if(this.console){console.log(Array.prototype.slice.call(arguments))}};window.console=window.console||{log:log,warn:log,error:log,assert:log};
+
 var app=window.app || {};
 app.background_map=null;
 app.activeWidgetManager=[];
