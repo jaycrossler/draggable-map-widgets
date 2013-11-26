@@ -31,7 +31,7 @@ app.init=function(){
 
 app.addBackgroundMap=function(){
     OpenLayers.ImgPath = "js/OpenLayers/img/";
-    background_map = new OpenLayers.Map({
+    app.background_map = new OpenLayers.Map({
         div: "background_map",
         layers: [
             new OpenLayers.Layer.WMS("Landsat7",
@@ -39,13 +39,11 @@ app.addBackgroundMap=function(){
                 {layers: "NAIP,OSM_BASEMAP_OVERLAY"})
 
         ],
-        controls: [
-        ],
         center: [-77.042466107994,38.892564036371],
         zoom: 15
     });
 
-    background_map.addControl(new OpenLayers.Control.LayerSwitcher());
+    app.background_map.addControl(new OpenLayers.Control.LayerSwitcher());
 };
 app.lookupWidgetInfo=function(options){
     //Extends a widget config with all widget info
