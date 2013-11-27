@@ -129,7 +129,14 @@ app.addWidget=function(options,$holder){
     var $titlebar_in = $('<div class="navbar-inner">').appendTo($titlebar);
     $('<a class="brand" href="#">')
         .text(options.name||"Widget")
-        .on('click',options.nameClickFunction||function(){})
+        .editable({
+            type: 'text',
+            title: 'Enter Widget Title',
+            success: function(response, newValue) {
+                var widget = app.getWidget(options.name);
+                widget.widget.name = newValue;
+            }
+        })
         .appendTo($titlebar_in);
     if (!options.preventCollapse) {
         $('<a class="btn pull-right icon_collapse plus-nodrag" href="#"><i class="icon-chevron-up"></i></a>')
