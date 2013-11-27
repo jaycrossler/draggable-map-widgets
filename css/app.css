@@ -19,6 +19,23 @@ div.plus-draggable {
 body {
     background: url(../img/pattern.png) repeat center center;
 }
+
+.navbar .brand,
+.navbar .nav > li > a {
+    padding: 8px 10px 0px 10px;
+}
+.navbar-inner{
+    min-height:16px;
+}
+.navbar .navbar-inner .brand {
+    margin-top: 0px;
+}
+.plus-collapsible .navbar .navbar-inner .nav .dropdown a {
+    margin-top: 0px;
+}
+.plus-collapsible .navbar .navbar-inner a.btn {
+    margin-top: 2px;
+}
 .dropdown-menu ul li a {
     color:black;
 }

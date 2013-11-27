@@ -23,12 +23,10 @@ app.init=function(){
 
     //TODO: Handle multiple layers per map widget
     //TODO: Build into a Django app
-    //TODO: Make menu titlebars smaller
     //TODO: Have only admins able to move widgets around
     //TODO: Have WFS controls to add features to map layer
     //TODO: Have WFS controls to toggle shapes (damaged/occupied/clear/whatever)
     //TODO: Have a polling service to check if settings/cookies have changed from master and load them
-
 
 };
 
@@ -101,11 +99,14 @@ app.updateWidget=function(options,widget){
         if (options.opacity) {
             widget.widget.$holder.fadeTo(100,options.opacity);
         }
+        if(options.zIndex){
+            widget.widget.$holder.css('zIndex',options.zIndex);
+        }
 
+        //Set up map and Extents
         if (widget.map){
             widget.map.updateSize();
         }
-
         if (widget.map && options.extents) {
             var e = options.extents;
             var bounds = [e.left, e.bottom, e.right, e.top];
@@ -143,8 +144,16 @@ app.addWidget=function(options,$holder){
 
         var menuOptions = [
             {icon:'share',title:'Duplicate Widget',onClick:function(){
-                var newOptions = $.extend({},options,{name:options.name+' copy'});
-                app.addWidgets([newOptions]);
+                var newOptions = $.extend({},options,{name:app.getCopyName(options.name)});
+                var $widget_holder = options.$holder;
+                if ($widget_holder && $widget_holder.position && $widget_holder.position()){
+                    var top = parseInt($widget_holder.position().top);
+                    var left = parseInt($widget_holder.position().left);
+                    newOptions.top = top+app.settings.buffer;
+                    newOptions.left = left+(2*app.settings.buffer);
+                }
+                var newWidget = app.addWidget(newOptions, $holder);
+                newWidget.widget.$holder.css({zIndex:10000});
             }},
             {icon:'plus-sign',title:'100% Solid',onClick:function(){
                 $widget_wrapper.fadeTo(100,1);
@@ -178,7 +187,10 @@ app.addWidget=function(options,$holder){
                 if (widget.map) widget.map.updateSize();
             }
         });
-    //TODO: On drag, make z-index the highest
+
+    if(options.zIndex){
+        $widget_wrapper.css('zIndex',options.zIndex);
+    }
 
     options.id = id;
     var content_type = typeof options.content;
@@ -284,16 +296,17 @@ app.getConfig=function(notAsJSON){
         var width = parseInt($content.css('width'));
         var height = parseInt($content.css('height'));
         var $holder = data.$holder;
-        var top,left;
+        var top,left,zIndex;
         if ($holder && $holder.position && $holder.position()){
             top = parseInt($holder.position().top);
             left = parseInt($holder.position().left)+app.settings.buffer;
+            zIndex= $holder.css('zIndex');
         }
         //TODO: Check that buffer is standard in every browser
 
         var minimized = $content.css('display');
         var opacity = app.getOpacity(data.$holder);
-        var widget_info = {widget_id:data.widget_id, name:name, width:width, height:height, top:top, left:left, minimized:minimized, opacity:opacity};
+        var widget_info = {widget_id:data.widget_id, name:name, width:width, height:height, top:top, left:left, minimized:minimized, opacity:opacity,zIndex:zIndex};
 
         if (widget_holder.map && widget_holder.map.getExtent) {
             widget_info.extents = widget_holder.map.getExtent();
@@ -432,4 +445,25 @@ app.addMainMenu=function(){
     ];
     app.buildHoverMenu({menuTitle:"Widget Functions",clickInsteadOfHover:false,right:true,menuOptions:menuOptions}).appendTo('#main_menu');
 
+};
+app.getCopyName=function(name){
+    var endWithCopyNum = /.+([Cc]opy)( \d+)*/.test(name);
+    if (endWithCopyNum){
+        var endWithNum = /\d$/.test(name);
+        if (endWithNum){
+            var num = name.match(/\d$/);
+            if (num) {
+                var suffix = ""+num;
+                num = parseInt(num);
+                num++;
+                name = name.substring(0, name.length - suffix.length);
+                name= _.string.trim(name)+" "+num;
+            }
+        } else {
+            name+= " 2";
+        }
+    } else {
+        name+= " Copy";
+    }
+    return name;
 };
